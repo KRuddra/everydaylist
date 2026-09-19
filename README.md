@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Everyday List
 
-## Getting Started
+A personal daily work tracker (PWA) that syncs across iPhone and laptop. Tasks
+under fixed categories — **Reminders, Coop, Courses** — roll over day to day
+until you strike them complete, with per-task comments and browsable history.
 
-First, run the development server:
+## Stack
+
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 4 + shadcn/ui ·
+Neon Postgres + Drizzle ORM · TanStack Query (offline-persisted) · Serwist (PWA)
+· `jose` + bcryptjs auth. Deployed on Vercel.
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+cp .env.example .env.local   # then fill in the values (see comments in the file)
+pnpm db:migrate              # apply database migrations
+pnpm db:seed                 # optional: load sample data
+pnpm dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required environment variables are documented in [`.env.example`](./.env.example).
+Generate the two secrets with:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+openssl rand -base64 48                                              # AUTH_SECRET
+node -e "console.log(require('bcryptjs').hashSync(process.argv[1],12))" "your-password"   # APP_PASSWORD_HASH
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Script | Purpose |
+|---|---|
+| `pnpm dev` | Dev server (Turbopack) |
+| `pnpm build` | Production build (webpack — required for the service worker) |
+| `pnpm start` | Serve the production build |
+| `pnpm lint` / `pnpm typecheck` | ESLint / `tsc --noEmit` |
+| `pnpm test` / `pnpm test:e2e` | Vitest unit/component / Playwright e2e |
+| `pnpm db:generate` | Generate a Drizzle migration from the schema |
+| `pnpm db:migrate` / `pnpm db:migrate:down` | Apply / roll back migrations |
+| `pnpm db:seed` | Seed sample data |
 
-To learn more about Next.js, take a look at the following resources:
+## Testing the PWA / offline
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Offline behavior needs a production build (the service worker is disabled in dev):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm build && pnpm start      # then use DevTools → Network → Offline
+E2E_PROD=1 pnpm test:e2e      # run e2e against the production build
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [`docs/PROJECT_PLAN.md`](./docs/PROJECT_PLAN.md) for the full task breakdown.
