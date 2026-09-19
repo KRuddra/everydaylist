@@ -16,6 +16,9 @@ jobs:
       APP_PASSWORD_HASH: "$2a$12$ci.placeholder.hash.value.for.ci.checks.only.0000000000"
       APP_TIMEZONE: "America/Toronto"
       NEXT_PUBLIC_APP_TIMEZONE: "America/Toronto"
+      # next typegen (run by `pnpm typecheck`) loads the Serwist plugin under
+      # Turbopack and prints a harmless dev-only warning; silence it in CI logs.
+      SERWIST_SUPPRESS_TURBOPACK_WARNING: "1"
     steps:
       - uses: actions/checkout@v4
 
