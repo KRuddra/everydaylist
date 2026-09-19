@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 /**
  * Shared helpers for locating and parsing drizzle-kit migration SQL files.
  * Used by both `scripts/verify-migration.ts` (pglite) and
- * `scripts/rollback.ts` (real Neon database via `pnpm db:migrate:down`).
+ * `scripts/rollback.ts` (real Supabase database via `pnpm db:migrate:down`).
  */
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

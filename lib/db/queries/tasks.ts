@@ -70,8 +70,8 @@ export interface CreateTaskInput {
  * erroring or re-applying the new field values.
  *
  * `sortOrder` is computed inside the same `INSERT` statement (append to the
- * end of `category`) so create stays a single atomic statement even though
- * `neon-http` has no interactive transactions.
+ * end of `category`) so create stays a single atomic statement — keeping every
+ * write to one statement means this works over Supabase's transaction pooler.
  */
 export async function createTask(
   db: AppDatabase,

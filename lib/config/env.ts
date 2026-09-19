@@ -12,7 +12,7 @@ import { z } from "zod";
  * Client-safe values live in `clientEnv.ts`.
  */
 const serverSchema = z.object({
-  /** Neon Postgres connection string. */
+  /** Postgres (Supabase) connection string. */
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   /** Secret used to sign/verify the JWT session cookie (min 32 chars). */
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),

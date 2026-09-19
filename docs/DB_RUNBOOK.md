@@ -6,24 +6,21 @@ this doc (see "Verified" notes).
 
 ## Environment split (read this first)
 
-- **Production runtime** (`lib/db/*`, once Stage 5 implements it) uses
-  **`drizzle-orm/neon-http`** — Neon's HTTP query endpoint. It does **not**
-  support interactive transactions: every write is a single independent SQL
-  statement. Do not introduce `ws`/`Pool`-based connections into application
-  code.
-- **`pnpm db:migrate`** (the `drizzle-kit migrate` CLI) is a separate tool
-  from the app runtime. When `@neondatabase/serverless` is the only Postgres
-  driver installed (our case), drizzle-kit's CLI talks to Neon over a
-  **WebSocket `Pool`** (bundling its own `ws` internally — this is
-  drizzle-kit's own dependency, not something added to this project's
-  dependencies) so it *can* wrap a migration file in a real transaction.
-  That's a CLI-only implementation detail; it doesn't change the app's
-  runtime driver.
-- **Tests/verification never touch Neon at all.** There is no Docker or
-  local Postgres in this project. `pnpm db:verify` spins up an in-process
-  **pglite** (`@electric-sql/pglite`) instance, applies the SQL files
-  directly, and tears it down. Production is the only environment that ever
-  sees a real Postgres/Neon connection.
+- **Production runtime** (`lib/db/client.ts`) uses **`drizzle-orm/node-postgres`**
+  (the `pg` driver) against a Supabase pooled `DATABASE_URL`. Every write in
+  `lib/db/queries/*` is deliberately a single independent SQL statement, so it
+  works over Supabase's transaction pooler as well as its session pooler.
+  `pg`'s `Pool` connects lazily (on first query), so importing the client at
+  build time is safe.
+- **`pnpm db:migrate`** (the `drizzle-kit migrate` CLI) reads the same
+  `DATABASE_URL` and applies migrations, wrapping each migration file in a
+  transaction. Point it at a pooled connection that supports transactions —
+  Supabase's **session pooler** (port 5432) is the safe choice for migrations.
+- **Tests/verification never touch the real database at all.** There is no
+  Docker or local Postgres in this project. `pnpm db:verify` spins up an
+  in-process **pglite** (`@electric-sql/pglite`) instance, applies the SQL
+  files directly, and tears it down. Production is the only environment that
+  ever sees a real Postgres connection.
 
 ## Directory layout
 
@@ -80,7 +77,7 @@ doesn't know about either of them:
    it).
 
 Then run `pnpm db:verify` (below) before ever pointing this migration at
-Neon.
+Supabase.
 
 **Verified:** ran against the current schema; confirmed the output contains
 the `completed` `GENERATED ALWAYS AS (...) STORED` column, the
@@ -95,17 +92,17 @@ Runs `drizzle-kit migrate` against `DATABASE_URL` (read from `.env.local` /
 `.env`, same as `drizzle.config.ts`). Applies every migration in
 `drizzle/migrations/` not yet recorded in the `drizzle.__drizzle_migrations`
 tracking table, in order, then records it. Requires a real `DATABASE_URL` —
-there is no local Postgres to point this at, so this command talks to Neon
-directly. Run it against a **dev/staging Neon branch first**, never
-directly against a production branch you can't restore.
+there is no local Postgres to point this at, so this command talks to your
+Supabase database directly. Run it against a **non-production database
+first**, never directly against production data you can't restore.
 
 ### `pnpm db:migrate:down`
 
 Runs `scripts/rollback.ts`. Looks up the **most recent** migration tag from
 `meta/_journal.json`, reads its paired `down/<tag>.sql`, and applies each
 statement (split on `--> statement-breakpoint`) individually against
-`DATABASE_URL` via `drizzle-orm/neon-http` — one HTTP request per statement,
-since `neon-http` has no interactive transaction to wrap them in.
+`DATABASE_URL` via `drizzle-orm/node-postgres`, one statement at a time with
+no surrounding transaction.
 
 **This project currently has exactly one migration**, so "most recent in the
 journal" and "most recent applied" are the same thing. If a second migration
@@ -117,8 +114,8 @@ the one on top before rolling back.
 **Important — the tracking table is not updated by this script.**
 `drizzle-kit migrate` recorded the migration as applied in
 `drizzle.__drizzle_migrations`; running the down SQL removes the tables but
-does **not** remove that tracking row (`scripts/rollback.ts` talks to Neon
-directly, not through drizzle-kit). Before running `pnpm db:migrate` again
+does **not** remove that tracking row (`scripts/rollback.ts` talks to the
+database directly, not through drizzle-kit). Before running `pnpm db:migrate` again
 after a rollback, delete the stale row or drizzle-kit will think the
 migration is already applied and skip it, leaving you with an empty schema
 and a tracker that disagrees with reality:
@@ -133,7 +130,7 @@ compare `created_at` against when you ran `db:migrate`.)
 
 Runs `scripts/seed.ts`'s CLI entrypoint: loads `.env.local` (falling back to
 `.env`) via `process.loadEnvFile`, requires `DATABASE_URL`, builds a
-`drizzle-orm/neon-http` database, and calls the exported `seed(db)`. Inserts
+`drizzle-orm/node-postgres` database, and calls the exported `seed(db)`. Inserts
 ~14 days of history across all three categories — see "Seed data" below.
 Safe to re-run against an empty/fresh database; **not** idempotent against a
 database that already has seed data (it always generates new random UUIDs,
@@ -142,7 +139,7 @@ so re-running adds a second copy of everything rather than upserting).
 ### `pnpm db:verify`
 
 Runs `scripts/verify-migration.ts` — the only command in this list that
-**doesn't** need `DATABASE_URL` or touch Neon at all. Spins up a fresh
+**doesn't** need `DATABASE_URL` or touch the real database at all. Spins up a fresh
 in-process pglite instance with the `pg_trgm` contrib extension available,
 then:
 
@@ -169,11 +166,11 @@ changes without needing any credentials.
 **Verified:** all 16 checks pass; the down migration leaves zero tables and
 the extension removed.
 
-## First-time setup (fresh Neon database)
+## First-time setup (fresh Supabase database)
 
-1. `cp .env.example .env.local` and fill in a **dev/staging** Neon branch's
-   pooled connection string as `DATABASE_URL` (plus the other required
-   vars — see `.env.example`).
+1. `cp .env.example .env.local` and fill in a Supabase **pooled** connection
+   string as `DATABASE_URL` (session pooler, port 5432) — plus the other
+   required vars (see `.env.example`).
 2. `pnpm db:verify` — confirms the migration SQL itself is correct, with no
    DB credentials needed yet.
 3. `pnpm db:migrate` — applies the migration to the real database.
@@ -182,9 +179,9 @@ the extension removed.
 ## Rollback-on-failure procedure
 
 **If `pnpm db:migrate` fails partway through:** drizzle-kit's CLI migrator
-uses a WebSocket `Pool` connection for Postgres/Neon (see "Environment
-split" above), and Postgres supports transactional DDL, so a failure inside
-a single migration file is rolled back automatically by Postgres itself —
+wraps each migration file in a transaction, and Postgres supports
+transactional DDL, so a failure inside a single migration file is rolled
+back automatically by Postgres itself —
 none of that file's statements will have taken effect. Fix the SQL (or the
 schema that generated it), then re-run `pnpm db:migrate`. You do **not**
 need `pnpm db:migrate:down` in this case — nothing was committed.
@@ -201,11 +198,11 @@ need `pnpm db:migrate:down` in this case — nothing was committed.
 
 **If the down migration itself fails partway through** (rare — it's
 hand-written and covered by `db:verify`, but `db:migrate:down` runs
-statement-by-statement over HTTP with no surrounding transaction, so a
-mid-file failure *can* leave partial state on Neon, unlike `db:migrate`):
-inspect which of the down file's statements succeeded (the script logs each
-one as it runs), manually apply the remaining statements via the Neon SQL
-console or `psql`, then reconcile the tracking table as above.
+statement-by-statement with no surrounding transaction, so a mid-file
+failure *can* leave partial state, unlike `db:migrate`): inspect which of
+the down file's statements succeeded (the script logs each one as it runs),
+manually apply the remaining statements via the Supabase SQL editor or
+`psql`, then reconcile the tracking table as above.
 
 ## Adding the next migration
 
@@ -215,5 +212,5 @@ console or `psql`, then reconcile the tracking table as above.
    touches trigram indexes and add/adjust the manual fixes above as needed.
 4. Write the paired `drizzle/migrations/down/<same-name>.sql`.
 5. `pnpm db:verify` — iterate until it passes.
-6. `pnpm db:migrate` against a dev/staging Neon branch, confirm the app
+6. `pnpm db:migrate` against a non-production database, confirm the app
    works, only then promote to production.

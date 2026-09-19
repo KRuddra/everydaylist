@@ -1,8 +1,7 @@
 import { existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
-import type { NeonHttpDatabase } from "drizzle-orm/neon-http";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { PgliteDatabase } from "drizzle-orm/pglite";
 
 import { CATEGORY_SLUGS, type CategorySlug } from "@/lib/config/categories";
@@ -17,11 +16,11 @@ import {
  * Seed realistic sample data for Everyday List.
  *
  * Generic over the drizzle driver so the same seeding logic runs against
- * both a real Neon database (the CLI entrypoint below) and an in-process
+ * both a real Postgres database (Supabase; the CLI entrypoint below) and an in-process
  * pglite instance (`scripts/verify-migration.ts`), without duplicating the
  * data-generation logic between the two.
  */
-export type SeedDb = NeonHttpDatabase | PgliteDatabase;
+export type SeedDb = NodePgDatabase | PgliteDatabase;
 
 export interface SeedResult {
   taskCount: number;

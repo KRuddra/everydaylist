@@ -11,7 +11,7 @@ import { seed } from "./seed";
  * End-to-end verification of the forward + down migration SQL, run against
  * an in-process pglite instance (no Docker/local Postgres available — see
  * docs/DB_RUNBOOK.md). This is the thing `pnpm db:verify` runs; it must pass
- * before any migration is considered safe to apply to Neon.
+ * before any migration is considered safe to apply to Supabase.
  *
  * Checks, in order:
  *  1. Forward migration applies cleanly (extension, tables, indexes, FK, CHECK).

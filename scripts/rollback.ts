@@ -1,18 +1,17 @@
 import { existsSync } from "node:fs";
 
 import { sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/node-postgres";
 
 import { downSqlPath, latestMigrationTag, readStatements } from "./lib/migrationSql";
 
 /**
  * `pnpm db:migrate:down` — applies the paired down migration for the most
- * recently generated migration against the real (Neon) database.
+ * recently generated migration against the real (Supabase) database.
  *
- * Runs each statement in the down `.sql` file as its own request: the
- * `neon-http` driver has no interactive-transaction support, so there is no
- * multi-statement `BEGIN`/`COMMIT` wrapping this — see docs/DB_RUNBOOK.md for
- * what that means if a rollback fails partway through.
+ * Runs each statement in the down `.sql` file individually, without a
+ * multi-statement `BEGIN`/`COMMIT` wrapping — see docs/DB_RUNBOOK.md for what
+ * that means if a rollback fails partway through.
  *
  * Only ever rolls back the single latest migration (by journal order). This
  * project currently has exactly one migration; if a second migration is

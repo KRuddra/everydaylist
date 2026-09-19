@@ -7,7 +7,7 @@ until you strike them complete, with per-task comments and browsable history.
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 4 + shadcn/ui ·
-Neon Postgres + Drizzle ORM · TanStack Query (offline-persisted) · Serwist (PWA)
+Supabase Postgres + Drizzle ORM · TanStack Query (offline-persisted) · Serwist (PWA)
 · `jose` + bcryptjs auth. Deployed on Vercel.
 
 ## Setup
