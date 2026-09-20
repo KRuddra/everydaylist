@@ -49,7 +49,7 @@ export function SearchResultItem({ result, query, today }: SearchResultItemProps
     <Link
       href={href}
       aria-label={ariaLabelParts.join(", ")}
-      className="flex flex-col gap-1 rounded-lg px-1 py-2 hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      className="flex flex-col gap-1 rounded-lg px-1 py-2 hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
       <div aria-hidden="true" className="flex items-center gap-2">
         <CategoryDot category={result.category} size="xs" />

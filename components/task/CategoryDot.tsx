@@ -20,7 +20,7 @@ export function CategoryDot({ category, size = "sm", className }: CategoryDotPro
       aria-hidden="true"
       className={cn(
         "inline-block shrink-0 rounded-full",
-        size === "xs" ? "size-1.5" : "size-2",
+        size === "xs" ? "size-1.5" : "size-2.5",
         CATEGORY_DOT_CLASS[category],
         className,
       )}

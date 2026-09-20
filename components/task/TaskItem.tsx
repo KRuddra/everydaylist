@@ -44,8 +44,8 @@ export function TaskItem({ task, struck, overdue, showRolloverHint, onToggle, on
   if (commentCount > 0) rowLabelParts.push(`${commentCount} comment${commentCount === 1 ? "" : "s"}`);
 
   return (
-    <div className="flex w-full items-stretch gap-1 rounded-lg transition-colors hover:bg-muted/60">
-      <div className="flex shrink-0 items-center py-3 pr-2 pl-3">
+    <div className="flex w-full items-stretch gap-1 rounded-lg transition-colors hover:bg-muted">
+      <div className="flex shrink-0 items-center py-3.5 pr-2 pl-4">
         <Checkbox
           checked={struck}
           onCheckedChange={() => onToggle()}
@@ -62,10 +62,10 @@ export function TaskItem({ task, struck, overdue, showRolloverHint, onToggle, on
         type="button"
         onClick={onOpen}
         aria-label={rowLabelParts.join(", ")}
-        className="flex min-h-12 min-w-0 flex-1 items-start gap-2 rounded-lg py-3 pr-4 text-left focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        className="flex min-h-14 min-w-0 flex-1 items-start gap-2 rounded-lg py-3.5 pr-4 text-left focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
       >
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <p aria-hidden="true" className={cn("line-clamp-2 text-base", struck && "text-muted-foreground line-through")}>
+          <p aria-hidden="true" className={cn("line-clamp-2 text-base font-normal", struck && "text-muted-foreground line-through")}>
             {task.title}
           </p>
           {showRolloverHint ? (

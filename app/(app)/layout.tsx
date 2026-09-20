@@ -19,8 +19,8 @@ import { Toaster } from "@/components/ui/sonner";
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-full flex-1 flex-col md:pl-20">
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-sm supports-backdrop-filter:bg-background/80">
-        <h1 className="text-lg font-semibold">Everyday List</h1>
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border/60 bg-background/95 px-4 backdrop-blur-sm supports-backdrop-filter:bg-background/80">
+        <h1 className="text-sm font-medium text-muted-foreground">Everyday List</h1>
         <div className="flex items-center gap-1">
           <OfflineBanner />
           <ExportButton />

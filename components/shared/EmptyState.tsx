@@ -23,10 +23,10 @@ export function EmptyState({ variant = "empty", icon, title, description, onRetr
   return (
     <div
       role={variant === "error" ? "alert" : undefined}
-      className="flex flex-col items-center gap-2 py-8 text-center"
+      className="flex flex-col items-center gap-2 py-12 text-center"
     >
-      <Icon className="size-8 text-muted-foreground" aria-hidden="true" />
-      <p className="text-sm font-medium text-foreground">{title}</p>
+      <Icon className="size-10 text-muted-foreground/70" aria-hidden="true" />
+      <p className="text-base font-medium text-foreground">{title}</p>
       {description ? <p className="max-w-xs text-sm text-muted-foreground">{description}</p> : null}
       {onRetry ? (
         <Button variant="outline" size="sm" onClick={onRetry} className="mt-2">

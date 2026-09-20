@@ -55,7 +55,7 @@ export function DayNavigator({ date }: DayNavigatorProps) {
       </Button>
 
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger render={<Button variant="ghost" size="sm" className="gap-1.5 font-medium" />}>
+        <PopoverTrigger render={<Button variant="ghost" size="sm" className="gap-1.5 font-semibold" />}>
           <CalendarDays className="size-4" aria-hidden="true" />
           {formatCalendarDateLong(date)}
         </PopoverTrigger>

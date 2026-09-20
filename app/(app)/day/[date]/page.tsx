@@ -21,7 +21,7 @@ export default function DayPage(props: PageProps<"/day/[date]">) {
   const isPastDay = date !== today;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 py-2">
+    <div className="flex flex-1 flex-col gap-8 py-2">
       <DayNavigator date={date} />
 
       {isPastDay ? (

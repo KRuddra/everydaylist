@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ListSkeleton } from "@/components/shared/ListSkeleton";
@@ -53,13 +52,13 @@ export function CategorySection({ category, tasks, viewedDate, loading, error, o
   return (
     <section aria-labelledby={`category-${category}-heading`} className="flex flex-col gap-1">
       <div className="flex items-center justify-between px-1">
-        <h2 id={`category-${category}-heading`} className="flex items-center gap-2 text-lg font-semibold">
+        <h2 id={`category-${category}-heading`} className="flex items-center gap-2 text-base font-semibold">
           <CategoryDot category={category} />
           {getCategoryLabel(category)}
         </h2>
-        <Badge variant="secondary" className="font-normal">
+        <span className="text-xs font-normal text-muted-foreground">
           {completedCount} / {tasks.length}
-        </Badge>
+        </span>
       </div>
 
       {loading ? (
@@ -99,7 +98,7 @@ export function CategorySection({ category, tasks, viewedDate, loading, error, o
             <Button
               variant="ghost"
               size="sm"
-              className="justify-start gap-1.5 px-1 text-muted-foreground"
+              className="justify-start gap-1.5 px-1 text-muted-foreground hover:text-primary"
               onClick={() => setComposing(true)}
             >
               <Plus className="size-4" aria-hidden="true" />

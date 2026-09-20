@@ -17,7 +17,7 @@ export function StreakBadge({ label, count, variant, className }: StreakBadgePro
       <CardContent className="flex flex-col items-center gap-1 text-center">
         <span className="flex items-center gap-1 text-2xl font-bold">
           <Flame
-            className={cn("size-5", variant === "current" && count > 0 ? "text-priority-high" : "text-muted-foreground")}
+            className={cn("size-5", variant === "current" && count > 0 ? "text-today" : "text-muted-foreground")}
             aria-hidden="true"
           />
           {count}

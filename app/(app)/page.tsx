@@ -20,9 +20,9 @@ export default function TodayPage() {
     tasks.length === 0 ? 0 : Math.round((tasks.filter((task) => task.completed).length / tasks.length) * 100);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 py-4">
+    <div className="flex flex-1 flex-col gap-8 py-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{formatCalendarDateLong(today)} · Today</h2>
+        <h2 className="text-[28px] leading-9 font-bold tracking-tight">{formatCalendarDateLong(today)} · Today</h2>
         <Link href="/stats" aria-label={`View stats, ${percentComplete}% complete today`}>
           <ProgressRing value={percentComplete} size="sm" />
         </Link>

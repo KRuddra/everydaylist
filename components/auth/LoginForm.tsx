@@ -82,7 +82,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle className="text-center text-xl">Everyday List</CardTitle>
+        <CardTitle className="text-center text-2xl font-bold">Everyday List</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">

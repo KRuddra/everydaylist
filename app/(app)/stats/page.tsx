@@ -40,7 +40,7 @@ export default function StatsPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 py-4">
-      <h2 className="text-xl font-semibold">Stats</h2>
+      <h2 className="text-[28px] leading-9 font-bold tracking-tight">Stats</h2>
 
       {statsQuery.isError ? (
         <EmptyState
@@ -67,7 +67,7 @@ export default function StatsPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="text-lg font-semibold">Activity</h3>
+            <h3 className="text-base font-semibold">Activity</h3>
             <CalendarHeatmap days={heatmapDays} onSelectDay={handleSelectDay} />
             {showStaleCaption ? (
               <p className="text-xs text-muted-foreground">Updated {format(new Date(statsQuery.dataUpdatedAt), "MMM d, h:mm a")}</p>

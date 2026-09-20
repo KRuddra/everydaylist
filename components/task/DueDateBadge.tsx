@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarClock } from "lucide-react";
+import { AlertTriangle, Calendar } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { formatCalendarDateShort } from "@/lib/format/calendarDate";
@@ -30,7 +30,7 @@ export function DueDateBadge({ date, overdue, variant = "default", className }: 
       {overdue ? (
         <AlertTriangle className="size-3" aria-hidden="true" />
       ) : (
-        <CalendarClock className="size-3" aria-hidden="true" />
+        <Calendar className="size-3" aria-hidden="true" />
       )}
       <span aria-hidden="true">
         {formatCalendarDateShort(date)}

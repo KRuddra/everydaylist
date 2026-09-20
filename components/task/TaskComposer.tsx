@@ -65,7 +65,7 @@ export function TaskComposer({ mode, targetDate, defaultCategory, onDone }: Task
         <Tabs value={category} onValueChange={(value) => setCategory(value as CategorySlug)}>
           <TabsList className="w-full">
             {CATEGORIES.map((c) => (
-              <TabsTrigger key={c.slug} value={c.slug} className="flex-1">
+              <TabsTrigger key={c.slug} value={c.slug} className="flex-1 data-active:text-primary">
                 {c.label}
               </TabsTrigger>
             ))}
@@ -75,6 +75,7 @@ export function TaskComposer({ mode, targetDate, defaultCategory, onDone }: Task
       <div className="flex items-center gap-2">
         <Input
           autoFocus
+          className="h-9"
           placeholder="Add a task…"
           aria-label="New task title"
           value={title}

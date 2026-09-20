@@ -22,7 +22,7 @@ export function ListSkeleton({ rows = 3, variant = "row", className }: ListSkele
   return (
     <div aria-hidden="true" className={cn("flex flex-col gap-2", className)}>
       {Array.from({ length: rows }, (_, index) => (
-        <div key={index} className="h-12 animate-pulse rounded-lg bg-muted" />
+        <div key={index} className="h-14 animate-pulse rounded-lg bg-muted" />
       ))}
     </div>
   );
