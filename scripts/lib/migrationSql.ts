@@ -26,20 +26,25 @@ export function downSqlPath(tag: string): string {
   return path.join(MIGRATIONS_DIR, "down", `${tag}.sql`);
 }
 
+/** All migration tags in journal (application) order — for applying the full schema. */
+export function allMigrationTags(): string[] {
+  const journalPath = path.join(MIGRATIONS_DIR, "meta", "_journal.json");
+  const journal = JSON.parse(readFileSync(journalPath, "utf-8")) as {
+    entries: Array<{ tag: string }>;
+  };
+  if (journal.entries.length === 0) {
+    throw new Error(`No migrations found in ${journalPath}`);
+  }
+  return journal.entries.map((entry) => entry.tag);
+}
+
 /**
  * Reads the tag of the most recently generated migration from the
  * drizzle-kit journal (`drizzle/migrations/meta/_journal.json`).
  */
 export function latestMigrationTag(): string {
-  const journalPath = path.join(MIGRATIONS_DIR, "meta", "_journal.json");
-  const journal = JSON.parse(readFileSync(journalPath, "utf-8")) as {
-    entries: Array<{ tag: string }>;
-  };
-  const lastEntry = journal.entries.at(-1);
-  if (!lastEntry) {
-    throw new Error(`No migrations found in ${journalPath}`);
-  }
-  return lastEntry.tag;
+  const tags = allMigrationTags();
+  return tags[tags.length - 1];
 }
 
 /** Splits a migration file's contents into individual executable SQL statements. */

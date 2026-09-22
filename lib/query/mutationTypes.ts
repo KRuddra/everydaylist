@@ -51,3 +51,7 @@ export interface AddCommentVariables {
 }
 
 export type ReorderTasksVariables = TaskReorderRequest;
+
+export interface SaveNoteVariables {
+  body: string;
+}

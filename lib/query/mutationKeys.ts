@@ -13,4 +13,5 @@ export const mutationKeys = {
   deleteTask: ["deleteTask"] as const,
   addComment: ["addComment"] as const,
   reorderTasks: ["reorderTasks"] as const,
+  saveNote: ["saveNote"] as const,
 };

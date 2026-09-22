@@ -11,6 +11,8 @@ import {
   loginRequestSchema,
   loginResponseSchema,
   logoutResponseSchema,
+  noteResponseSchema,
+  noteUpdateRequestSchema,
   searchResponseSchema,
   statsResponseSchema,
   taskCreateRequestSchema,
@@ -26,6 +28,7 @@ import {
   type ExportResponse,
   type LoginResponse,
   type LogoutResponse,
+  type NoteResponse,
   type SearchResponse,
   type StatsResponse,
   type TaskCreateRequest,
@@ -154,6 +157,16 @@ export const apiClient = {
 
   getExport: (): Promise<ExportResponse> =>
     request("/api/export", { method: "GET" }, exportResponseSchema),
+
+  getNote: (): Promise<NoteResponse> =>
+    request("/api/notes", { method: "GET" }, noteResponseSchema),
+
+  saveNote: (body: string): Promise<NoteResponse> =>
+    request(
+      "/api/notes",
+      { method: "PUT", body: JSON.stringify(noteUpdateRequestSchema.parse({ body })) },
+      noteResponseSchema,
+    ),
 };
 
 /**

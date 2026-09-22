@@ -6,7 +6,7 @@ import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { drizzle, type PgliteDatabase } from "drizzle-orm/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { forwardSqlPath, latestMigrationTag, readStatements } from "@/scripts/lib/migrationSql";
+import { allMigrationTags, forwardSqlPath, readStatements } from "@/scripts/lib/migrationSql";
 
 import { createTask, getDayView, patchTask } from "./tasks";
 
@@ -27,9 +27,10 @@ describe("lib/db/queries/tasks — rolling day-view matrix (pglite)", () => {
     client = new PGlite({ extensions: { pg_trgm } });
     db = drizzle(client);
 
-    const tag = latestMigrationTag();
-    for (const statement of readStatements(forwardSqlPath(tag))) {
-      await client.exec(statement);
+    for (const tag of allMigrationTags()) {
+      for (const statement of readStatements(forwardSqlPath(tag))) {
+        await client.exec(statement);
+      }
     }
   });
 

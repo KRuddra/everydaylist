@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { Calendar as CalendarIcon, Flag, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CategoryDot } from "@/components/task/CategoryDot";
 import { CommentComposer } from "@/components/task/CommentComposer";
 import { CommentThread } from "@/components/task/CommentThread";
 import { DueDateBadge } from "@/components/task/DueDateBadge";
 import { PriorityFlag } from "@/components/task/PriorityFlag";
+import { CATEGORIES, getCategoryLabel, type CategorySlug } from "@/lib/config/categories";
 import { parseCalendarDate, toCalendarDateString } from "@/lib/format/calendarDate";
 import { useAddComment, useComments } from "@/lib/query/hooks/useComments";
 import { useDeleteTask, useUpdateTask } from "@/lib/query/hooks/useTaskMutations";
@@ -31,14 +33,15 @@ interface TaskDetailDialogProps {
 }
 
 /**
- * Focused single-task view: title, editable priority/due-date (via
- * `Popover`s), comment thread + composer, and a minimal delete action
- * (`docs/UI_SPEC.md` §3/§7 — no dedicated delete UI was specified beyond
- * "confirm scope"; this ships the minimal surface the API supports).
+ * Editable single-task view: rename the task, move it between categories,
+ * change its priority / due date (all via the API's `PATCH`), read + add
+ * comments, and delete. Changing a task's category moves it out of the
+ * currently-open section, which naturally closes this dialog.
  */
 export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogProps) {
   const [priorityOpen, setPriorityOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const addComment = useAddComment();
@@ -49,39 +52,79 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
     return null;
   }
 
-  const overdue = task.dueDate !== null && task.dueDate < today && task.completedDate === null;
+  const activeTask = task;
+  const overdue =
+    activeTask.dueDate !== null && activeTask.dueDate < today && activeTask.completedDate === null;
+
+  function handleTitleSave(title: string) {
+    updateTask.mutate({ taskId: activeTask.id, edits: { title } });
+  }
+
+  function handleCategoryChange(category: CategorySlug) {
+    setCategoryOpen(false);
+    if (category !== activeTask.category) {
+      updateTask.mutate({ taskId: activeTask.id, edits: { category } });
+    }
+  }
 
   function handlePriorityChange(priority: TaskPriority | null) {
     setPriorityOpen(false);
-    updateTask.mutate({ taskId: task!.id, edits: { priority } });
+    updateTask.mutate({ taskId: activeTask.id, edits: { priority } });
   }
 
   function handleDueDateChange(date: Date | undefined) {
     setDueDateOpen(false);
-    updateTask.mutate({ taskId: task!.id, edits: { dueDate: date ? toCalendarDateString(date) : null } });
+    updateTask.mutate({
+      taskId: activeTask.id,
+      edits: { dueDate: date ? toCalendarDateString(date) : null },
+    });
   }
 
   function handleDelete() {
-    deleteTask.mutate({ taskId: task!.id });
+    deleteTask.mutate({ taskId: activeTask.id });
     onOpenChange(false);
   }
 
   function handleAddComment(body: string) {
-    addComment.mutate({ taskId: task!.id, id: crypto.randomUUID(), body });
+    addComment.mutate({ taskId: activeTask.id, id: crypto.randomUUID(), body });
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] flex-col gap-3 sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="pr-6">{task.title}</DialogTitle>
+          <DialogTitle className="sr-only">Edit task</DialogTitle>
+          <TaskTitleField key={activeTask.id} title={activeTask.title} onSave={handleTitleSave} />
         </DialogHeader>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+            <PopoverTrigger render={<Button variant="outline" size="sm" className="gap-1.5" />}>
+              <CategoryDot category={activeTask.category} />
+              {getCategoryLabel(activeTask.category)}
+            </PopoverTrigger>
+            <PopoverContent className="w-44 gap-1 p-1">
+              {CATEGORIES.map((category) => (
+                <Button
+                  key={category.slug}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2"
+                  onClick={() => handleCategoryChange(category.slug)}
+                >
+                  <CategoryDot category={category.slug} />
+                  {category.label}
+                </Button>
+              ))}
+            </PopoverContent>
+          </Popover>
+
           <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
             <PopoverTrigger render={<Button variant="outline" size="sm" className="gap-1.5" />}>
               <Flag className="size-3.5" aria-hidden="true" />
-              {task.priority ? `${task.priority[0]!.toUpperCase()}${task.priority.slice(1)} priority` : "Set priority"}
+              {activeTask.priority
+                ? `${activeTask.priority[0]!.toUpperCase()}${activeTask.priority.slice(1)} priority`
+                : "Set priority"}
             </PopoverTrigger>
             <PopoverContent className="w-40 gap-1 p-1">
               {PRIORITY_OPTIONS.map((option) => (
@@ -102,11 +145,15 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
           <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
             <PopoverTrigger render={<Button variant="outline" size="sm" className="gap-1.5" />}>
               <CalendarIcon className="size-3.5" aria-hidden="true" />
-              {task.dueDate ? "Change due date" : "Set due date"}
+              {activeTask.dueDate ? "Change due date" : "Set due date"}
             </PopoverTrigger>
             <PopoverContent className="w-auto gap-2 p-2">
-              <Calendar mode="single" selected={task.dueDate ? parseCalendarDate(task.dueDate) : undefined} onSelect={handleDueDateChange} />
-              {task.dueDate ? (
+              <Calendar
+                mode="single"
+                selected={activeTask.dueDate ? parseCalendarDate(activeTask.dueDate) : undefined}
+                onSelect={handleDueDateChange}
+              />
+              {activeTask.dueDate ? (
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => handleDueDateChange(undefined)}>
                   Clear due date
                 </Button>
@@ -114,7 +161,7 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
             </PopoverContent>
           </Popover>
 
-          {task.dueDate ? <DueDateBadge date={task.dueDate} overdue={overdue} /> : null}
+          {activeTask.dueDate ? <DueDateBadge date={activeTask.dueDate} overdue={overdue} /> : null}
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
@@ -136,5 +183,44 @@ export function TaskDetailDialog({ task, open, onOpenChange }: TaskDetailDialogP
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * Inline-editable task title. Keyed by task id by the parent so its `useState`
+ * initializer re-seeds when a different task opens (no set-state-in-effect).
+ * Commits on blur or Enter; an empty title reverts rather than saving.
+ */
+function TaskTitleField({ title, onSave }: { title: string; onSave: (title: string) => void }) {
+  const [draft, setDraft] = useState(title);
+
+  function commit() {
+    const trimmed = draft.trim();
+    if (trimmed.length === 0) {
+      setDraft(title);
+      return;
+    }
+    if (trimmed !== title) {
+      onSave(trimmed);
+    }
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      event.currentTarget.blur();
+    }
+  }
+
+  return (
+    <input
+      value={draft}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={commit}
+      onKeyDown={handleKeyDown}
+      aria-label="Task title"
+      maxLength={500}
+      className="-mx-1 w-full rounded-md bg-transparent px-1 pr-8 text-left text-lg font-semibold outline-none transition-colors hover:bg-muted/50 focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"
+    />
   );
 }

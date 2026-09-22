@@ -81,6 +81,22 @@ const TITLES_BY_CATEGORY: Record<CategorySlug, readonly string[]> = {
     "Join study group session",
     "Finish Docker/Kubernetes lab",
   ],
+  diet: [
+    "Oatmeal with berries for breakfast",
+    "Greek yogurt and granola",
+    "Grilled chicken salad for lunch",
+    "Salmon with roasted vegetables",
+    "Veggie stir-fry with rice",
+    "Turkey sandwich and an apple",
+    "Two eggs and avocado toast",
+    "Lentil soup and a bread roll",
+    "Protein smoothie after workout",
+    "Pasta with tomato sauce",
+    "Black bean tacos for dinner",
+    "Handful of almonds as a snack",
+    "Banana with peanut butter",
+    "Eight glasses of water today",
+  ],
 };
 
 const COMMENT_POOL = [
@@ -245,6 +261,7 @@ export async function seed(db: SeedDb): Promise<SeedResult> {
     reminders: 0,
     coop: 0,
     courses: 0,
+    diet: 0,
   };
 
   const taskRows: NewTaskRow[] = [];

@@ -96,7 +96,20 @@ export const taskComments = pgTable(
   ],
 );
 
+/**
+ * A single, persistent, non-dated general note (a free-form scratchpad).
+ * Unlike tasks, this is not scoped to a day — there is exactly one row, keyed
+ * by a fixed id, upserted on every save (last-writer-wins).
+ */
+export const notes = pgTable("notes", {
+  id: text("id").primaryKey(),
+  body: text("body").notNull().default(""),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type TaskRow = typeof tasks.$inferSelect;
 export type NewTaskRow = typeof tasks.$inferInsert;
 export type TaskCommentRow = typeof taskComments.$inferSelect;
 export type NewTaskCommentRow = typeof taskComments.$inferInsert;
+export type NoteRow = typeof notes.$inferSelect;
+export type NewNoteRow = typeof notes.$inferInsert;

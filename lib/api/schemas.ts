@@ -343,3 +343,20 @@ export const exportResponseSchema = z.object({
   tasks: z.array(taskResponseSchema),
 });
 export type ExportResponse = z.infer<typeof exportResponseSchema>;
+
+// ---------------------------------------------------------------------------
+// Notes (a single persistent, non-dated general note)
+// ---------------------------------------------------------------------------
+
+/** `GET /api/notes` and `PUT /api/notes` response body. */
+export const noteResponseSchema = z.object({
+  body: z.string(),
+  updatedAt: isoDateTimeSchema,
+});
+export type NoteResponse = z.infer<typeof noteResponseSchema>;
+
+/** `PUT /api/notes` request body. */
+export const noteUpdateRequestSchema = z.object({
+  body: z.string().max(100_000, "Note is too long"),
+});
+export type NoteUpdateRequest = z.infer<typeof noteUpdateRequestSchema>;

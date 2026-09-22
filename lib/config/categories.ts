@@ -10,6 +10,7 @@ export const CATEGORIES = [
   { slug: "reminders", label: "Reminders" },
   { slug: "coop", label: "Coop" },
   { slug: "courses", label: "Courses" },
+  { slug: "diet", label: "Diet" },
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];

@@ -4,7 +4,7 @@ import { eq, ilike, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/pglite";
 
 import { tasks, taskComments } from "@/lib/db/schema";
-import { downSqlPath, forwardSqlPath, latestMigrationTag, readStatements } from "./lib/migrationSql";
+import { allMigrationTags, downSqlPath, forwardSqlPath, readStatements } from "./lib/migrationSql";
 import { seed } from "./seed";
 
 /**
@@ -54,15 +54,19 @@ async function step(label: string, fn: () => Promise<void>): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const tag = latestMigrationTag();
+  const tags = allMigrationTags();
 
-  console.log(`Verifying migration "${tag}" against pglite...\n`);
+  console.log(`Verifying ${tags.length} migration(s) [${tags.join(", ")}] against pglite...\n`);
 
   const client = new PGlite({ extensions: { pg_trgm } });
   const db = drizzle(client);
 
-  console.log("1. Forward migration");
-  await step("applies without error", () => applySqlFile(client, forwardSqlPath(tag)));
+  console.log("1. Forward migrations");
+  await step("all migrations apply without error", async () => {
+    for (const tag of tags) {
+      await applySqlFile(client, forwardSqlPath(tag));
+    }
+  });
 
   console.log("2. Schema shape");
   await step("both tables exist", async () => {
@@ -220,8 +224,12 @@ async function main(): Promise<void> {
     );
   });
 
-  console.log("7. Down migration");
-  await step("applies without error", () => applySqlFile(client, downSqlPath(tag)));
+  console.log("7. Down migrations");
+  await step("all down migrations apply without error", async () => {
+    for (const tag of [...tags].reverse()) {
+      await applySqlFile(client, downSqlPath(tag));
+    }
+  });
 
   await step("both tables are gone", async () => {
     const result = await client.query<{ table_name: string }>(

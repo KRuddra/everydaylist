@@ -2,7 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
-import type { CommentListResponse } from "@/lib/api/schemas";
+import type { CommentListResponse, NoteResponse } from "@/lib/api/schemas";
 import {
   insertTaskIntoDayCache,
   patchTaskInDayCache,
@@ -19,6 +19,7 @@ import type {
   CreateTaskVariables,
   DeleteTaskVariables,
   ReorderTasksVariables,
+  SaveNoteVariables,
   ToggleCompleteVariables,
   UpdateTaskVariables,
 } from "@/lib/query/mutationTypes";
@@ -185,6 +186,26 @@ export function registerMutationDefaults(queryClient: QueryClient): void {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.dayAll });
+    },
+  });
+
+  queryClient.setMutationDefaults(mutationKeys.saveNote, {
+    mutationFn: (variables: SaveNoteVariables) => apiClient.saveNote(variables.body),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.note });
+      const previous = queryClient.getQueryData<NoteResponse>(queryKeys.note);
+      queryClient.setQueryData<NoteResponse>(queryKeys.note, {
+        body: variables.body,
+        updatedAt: new Date().toISOString(),
+      });
+      return { previous };
+    },
+    onError: (error, _variables, context) => {
+      if (context) queryClient.setQueryData(queryKeys.note, context.previous);
+      notifyMutationError(error, "Couldn't save your note. It'll retry automatically.");
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData<NoteResponse>(queryKeys.note, data);
     },
   });
 }

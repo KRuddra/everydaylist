@@ -17,4 +17,6 @@ export const queryKeys = {
   statsAll: ["stats"] as const,
   /** Search results for a query string (`GET /api/search`). */
   search: (q: string) => ["search", q] as const,
+  /** The single persistent general note (`GET /api/notes`). */
+  note: ["note"] as const,
 };

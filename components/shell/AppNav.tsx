@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, History as HistoryIcon, Search as SearchIcon, Star, type LucideIcon } from "lucide-react";
+import { BarChart3, History as HistoryIcon, NotebookPen, Search as SearchIcon, Star, type LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { clientToday } from "@/lib/query/optimistic";
@@ -28,6 +28,7 @@ export function AppNav() {
   const items: NavItem[] = [
     { href: "/", label: "Today", icon: Star, active: pathname === "/" },
     { href: `/day/${today}`, label: "History", icon: HistoryIcon, active: pathname.startsWith("/day") },
+    { href: "/notes", label: "Notes", icon: NotebookPen, active: pathname === "/notes" },
     { href: "/stats", label: "Stats", icon: BarChart3, active: pathname === "/stats" },
     { href: "/search", label: "Search", icon: SearchIcon, active: pathname === "/search" },
   ];

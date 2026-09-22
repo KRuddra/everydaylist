@@ -5,6 +5,7 @@ const CATEGORY_DOT_CLASS: Record<CategorySlug, string> = {
   reminders: "bg-category-reminders",
   coop: "bg-category-coop",
   courses: "bg-category-courses",
+  diet: "bg-category-diet",
 };
 
 interface CategoryDotProps {

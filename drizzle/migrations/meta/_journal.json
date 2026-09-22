@@ -8,6 +8,13 @@
       "when": 1789762875340,
       "tag": "0000_careful_thunderball",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790092928986,
+      "tag": "0001_demonic_toro",
+      "breakpoints": true
     }
   ]
 }
